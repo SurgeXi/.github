@@ -8,7 +8,7 @@ routing, document handling, exception detection, and approvals. A **platform cor
 vertical packs + connector layer**, with auditability and tenant isolation built in —
 and a human gate in front of every action that can cause harm.
 
-*A TeamSmith Enterprises LLC company (Alabama, USA).*
+*TeamSmith Enterprises LLC d/b/a SurgeXi Business Intelligence (Alabama, USA).*
 
 ### Products
 
