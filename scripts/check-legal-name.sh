@@ -1,31 +1,29 @@
 #!/usr/bin/env bash
 # Copyright © 2026 TeamSmith Enterprises LLC d/b/a SurgeXi Business Intelligence. All Rights Reserved.
-# rev 272 / rev 275 A2.2 / rev 276 A1: the company is named one of TWO approved ways (Todd, Oct 28):
+# rev 272 / rev 275 A2.2 / rev 276 A1/A2: the company is named one of TWO approved ways (Todd, Oct 28):
 #   Legal   (contracts, legal texts' next version, LICENSE / repo notice, contract-party lines):
 #           TeamSmith Enterprises LLC d/b/a SurgeXi Business Intelligence
 #           (where a contract states the party: "..., an Alabama limited liability company, doing business as ...")
 #   Display (footers, marketing pages, descriptions, social and promotional copy):
-#           © SurgeXi Business Intelligence, a TeamSmith Ent. LLC AL co.
+#           © 2026 SurgeXi Business Intelligence, a TeamSmith Ent. LLC AL co.
 # Fails on the old forms and the misspelling "Teamsmith Enterprises"; on the home town everywhere.
-# HOLD: a copyright COMMENT line (the source-file header, wherever it sits) waits on Todd's
-# Legal-or-Display answer, so it is not checked for the old forms yet.
+# Source-file copyright headers use the Legal form (rev 276 A2); nothing is held.
 #   bash scripts/check-legal-name.sh            # the repo
 #   bash scripts/check-legal-name.sh --self-test
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 2
 
-DISPLAY='© SurgeXi Business Intelligence, a TeamSmith Ent. LLC AL co.'
+DISPLAY='© 2026 SurgeXi Business Intelligence, a TeamSmith Ent. LLC AL co.'
 OLD=(
   -e '[Tt][Ee][Aa][Mm] \?[Ss][Mm][Ii][Tt][Hh] [Ee][Nn][Tt]\. \+LLC \+AL \+Co'
   -e '\b[Aa][Nn]\? \+[Tt]eam \?[Ss]mith Enterprises,\? \?LLC\.\?\( \+AL\.\?\)\? \+[Cc]ompany'
   -e 'Teamsmith Enterprises'
 )
 HOME_TOWN=(-e '[Pp]leasant [Gg]rove')
-# one line: $1 = its line number, $2 = its text. Hit = home town anywhere, or an old form outside
-# a held header once the Display string itself is taken out.
+# one line: $1 = its line number, $2 = its text. Hit = the home town, or an old form once the
+# Display string itself is taken out.
 is_hit() {
   printf '%s\n' "$2" | grep -q "${HOME_TOWN[@]}" && return 0
-  [[ "$2" == *Copyright* ]] && [[ "$2" =~ ^[[:space:]]*(#|//|/\*|\*|<!--|--|;|%|\{/\*) ]] && return 1
   printf '%s\n' "${2//"$DISPLAY"/}" | grep -q "${OLD[@]}"
 }
 SELF=scripts/check-legal-name.sh
@@ -50,10 +48,9 @@ if [ "${1:-}" = "--self-test" ]; then
              "TeamSmith Enterprises LLC, an Alabama limited liability company, doing business as SurgeXi Business Intelligence"; do
     is_hit 9 "$new" && { echo "self-test: false hit: $new"; rc=1; }
   done
-  # HOLD: an old-form copyright comment is not a hit yet; the home town still is; the same text outside a comment is
-  is_hit 1 "# Copyright © 2026 SurgeXi Business Intelligence, a Teamsmith Enterprises LLC company." && { echo "self-test: held header hit"; rc=1; }
-  is_hit 1 "# Copyright © 2026 Pleasant Grove" || { echo "self-test: home town in a header not caught"; rc=1; }
-  is_hit 60 "<!-- Copyright © 2026 SurgeXi Business Intelligence, a Teamsmith Enterprises LLC company. -->" && { echo "self-test: held header after front matter hit"; rc=1; }
+  # rev 276 A2: nothing is held, so an old-form copyright header is a hit too
+  is_hit 1 "# Copyright © 2026 SurgeXi Business Intelligence, a Teamsmith Enterprises LLC company." || { echo "self-test: old header not caught"; rc=1; }
+  is_hit 1 "# Copyright © 2026 TeamSmith Enterprises LLC d/b/a SurgeXi Business Intelligence. All Rights Reserved." && { echo "self-test: Legal header hit"; rc=1; }
   is_hit 6 "© 2026 SurgeXi Business Intelligence, a Teamsmith Enterprises LLC company." || { echo "self-test: old line outside a comment not caught"; rc=1; }
   [ "$rc" = 0 ] && echo "self-test ok"
   exit "$rc"
@@ -65,8 +62,8 @@ while IFS= read -r h; do
   is_hit "$n" "$t" && hits+=("$h")
 done < <(git grep -n -I "${OLD[@]}" "${HOME_TOWN[@]}" -- . "${EXCLUDE[@]}")
 if [ "${#hits[@]}" -gt 0 ]; then
-  echo "rev 276 A1: use the Legal or the Display form (see $SELF):"
+  echo "rev 276 A1/A2: use the Legal or the Display form (see $SELF):"
   printf '%s\n' "${hits[@]}"
   exit 1
 fi
-echo "company name ok: Legal or Display only (file headers on hold); no home town"
+echo "company name ok: Legal or Display only; no home town"
